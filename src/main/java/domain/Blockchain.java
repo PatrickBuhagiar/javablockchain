@@ -1,31 +1,39 @@
+package domain;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Blockchain {
 
-    private LinkedList<Block> chain;
-    private ArrayList<Transaction> currentTransaction;
+    private final LinkedList<Block> chain;
+    private final ArrayList<Transaction> nextBlockTransactions;
 
     public Blockchain() {
         this.chain = new LinkedList<Block>();
-        this.currentTransaction = new ArrayList<Transaction>();
+        this.nextBlockTransactions = new ArrayList<Transaction>();
 
         this.createNewBlock("1", 100);
     }
 
     /**
-     * Create a new Block
+     * Create a new domain.Block and add it to the chain.*
+     *
+     * @param previousHash the previous hash
+     * @param proof        the proof
+     * @return the newly created block
      */
-    public void createNewBlock(final String previousHash,
-                               final long proof) {
+    public Block createNewBlock(final String previousHash,
+                                final long proof) {
         final Block block = new Block(this.chain.size() + 1,
                 System.currentTimeMillis(),
-                this.currentTransaction,
+                this.nextBlockTransactions,
                 proof,
                 previousHash);
 
-        this.currentTransaction.clear();
+        this.nextBlockTransactions.clear();
         this.chain.add(block);
+
+        return block;
     }
 
     /**
@@ -40,12 +48,9 @@ public class Blockchain {
     public int createNewTransaction(final String sender,
                                     final String recipient,
                                     final long amount) {
-        currentTransaction.add(new Transaction(sender, recipient, amount));
+        nextBlockTransactions.add(new Transaction(sender, recipient, amount));
 
         return this.getLastBlock().getIndex() + 1;
-    }
-
-    public static void hash(final Block block) {
     }
 
     /**
@@ -56,5 +61,7 @@ public class Blockchain {
     public Block getLastBlock() {
         return this.chain.getLast();
     }
+
+
 
 }

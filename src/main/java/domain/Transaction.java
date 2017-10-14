@@ -1,10 +1,14 @@
+package domain;
+
 public class Transaction {
 
-    private String sender;
-    private String recipient;
-    private long amount;
+    private final String sender;
+    private final String recipient;
+    private final long amount;
 
-    public Transaction(String sender, String recipient, long amount) {
+    public Transaction(final String sender,
+                       final String recipient,
+                       final long amount) {
         this.sender = sender;
         this.recipient = recipient;
         this.amount = amount;
