@@ -1,4 +1,4 @@
-package domain;
+package com.blockchain.java.domain;
 
 public class Transaction {
 

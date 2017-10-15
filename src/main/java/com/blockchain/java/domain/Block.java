@@ -1,4 +1,4 @@
-package domain;
+package com.blockchain.java.domain;
 
 import org.apache.commons.lang3.SerializationUtils;
 

@@ -1,22 +1,27 @@
-package domain;
+package com.blockchain.java.domain;
+
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
+@Component
 public class Blockchain {
 
     private final LinkedList<Block> chain;
     private final ArrayList<Transaction> nextBlockTransactions;
 
     public Blockchain() {
-        this.chain = new LinkedList<Block>();
-        this.nextBlockTransactions = new ArrayList<Transaction>();
+        this.chain = new LinkedList<>();
+        this.nextBlockTransactions = new ArrayList<>();
 
-        this.createNewBlock("1", 100);
+        //Initialize the blockchain with a block
+        this.createNewBlock("0001", 50);
     }
 
     /**
-     * Create a new domain.Block and add it to the chain.*
+     * Create a new com.blockchain.java.domain.Block and add it to the chain.*
      *
      * @param previousHash the previous hash
      * @param proof        the proof
@@ -62,6 +67,8 @@ public class Blockchain {
         return this.chain.getLast();
     }
 
-
+    public List<Block> getChain() {
+        return this.chain;
+    }
 
 }
