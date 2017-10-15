@@ -4,13 +4,11 @@ import com.blockchain.java.domain.Block;
 import com.blockchain.java.domain.Blockchain;
 import com.blockchain.java.domain.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.blockchain.java.domain.Block.proofOfWork;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -28,13 +26,18 @@ public class BlockchainController {
 
     @RequestMapping(value="mine", method = GET)
     public @ResponseBody
-    Block mineBlocking() {
-        return null;
+    Block mineBlock(@RequestHeader(value = "identifier") final String identifier) {
+        //find new proof
+        final long newProof = proofOfWork(blockchain.lastBlock().getProof());
+        //reward miner
+        blockchain.createNewTransaction(new Transaction("0000", identifier, 1L));
+        //create new block
+        return blockchain.createNewBlock(blockchain.lastBlock().hash(), newProof);
     }
 
     @RequestMapping(value="transaction", method = POST)
     public @ResponseBody
-    Transaction createTransaction(@RequestBody final Transaction transaction) {
-        return null;
+    int createTransaction(@RequestBody final Transaction transaction) {
+        return blockchain.createNewTransaction(transaction);
     }
 }

@@ -9,15 +9,15 @@ import java.util.List;
 @Component
 public class Blockchain {
 
-    private final LinkedList<Block> chain;
-    private final ArrayList<Transaction> nextBlockTransactions;
+    private LinkedList<Block> chain;
+    private ArrayList<Transaction> nextBlockTransactions;
 
     public Blockchain() {
         this.chain = new LinkedList<>();
         this.nextBlockTransactions = new ArrayList<>();
 
         //Initialize the blockchain with a block
-        this.createNewBlock("0001", 50);
+        this.createNewBlock("0001".getBytes(), 50);
     }
 
     /**
@@ -27,11 +27,11 @@ public class Blockchain {
      * @param proof        the proof
      * @return the newly created block
      */
-    public Block createNewBlock(final String previousHash,
+    public Block createNewBlock(final byte[] previousHash,
                                 final long proof) {
         final Block block = new Block(this.chain.size() + 1,
                 System.currentTimeMillis(),
-                this.nextBlockTransactions,
+                new ArrayList<>(this.nextBlockTransactions),
                 proof,
                 previousHash);
 
@@ -45,17 +45,13 @@ public class Blockchain {
      * Create a new transaction and return the index of the previous block.
      * A transaction is added to a queue so that it can be processed into a block later on.
      *
-     * @param sender    The sender
-     * @param recipient the person receiving funds
-     * @param amount    the transaction amount
-     * @return an incremet of the last block's index
+     * @param transaction the new Transaction
+     * @return an increment of the last block's index
      */
-    public int createNewTransaction(final String sender,
-                                    final String recipient,
-                                    final long amount) {
-        nextBlockTransactions.add(new Transaction(sender, recipient, amount));
+    public int createNewTransaction(final Transaction transaction) {
+        this.nextBlockTransactions.add(transaction);
 
-        return this.getLastBlock().getIndex() + 1;
+        return this.lastBlock().getIndex() + 1;
     }
 
     /**
@@ -63,7 +59,7 @@ public class Blockchain {
      *
      * @return the last block in the chain.
      */
-    public Block getLastBlock() {
+    public Block lastBlock() {
         return this.chain.getLast();
     }
 

@@ -1,10 +1,16 @@
 package com.blockchain.java.domain;
 
-public class Transaction {
+import java.io.Serializable;
 
-    private final String sender;
-    private final String recipient;
-    private final long amount;
+public class Transaction implements Serializable {
+
+    private String sender;
+    private String recipient;
+    private long amount;
+
+
+    protected Transaction(){
+    }
 
     public Transaction(final String sender,
                        final String recipient,

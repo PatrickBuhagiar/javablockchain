@@ -5,22 +5,22 @@ import org.apache.commons.lang3.SerializationUtils;
 import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class Block implements Serializable {
 
     private int index;
     private long timestamp;
-    private List<Transaction> transactions;
+    private ArrayList<Transaction> transactions;
     private long proof;
-    private String previousHash;
+    private byte[] previousHash;
 
     public Block(final int index,
                  final long timestamp,
-                 final List<Transaction> transactions,
+                 final ArrayList<Transaction> transactions,
                  final long proof,
-                 final String previousHash) {
+                 final byte[] previousHash) {
         this.index = index;
         this.timestamp = timestamp;
         this.transactions = transactions;
@@ -36,7 +36,7 @@ public class Block implements Serializable {
         return timestamp;
     }
 
-    public List<Transaction> getTransactions() {
+    public ArrayList<Transaction> getTransactions() {
         return transactions;
     }
 
@@ -44,7 +44,7 @@ public class Block implements Serializable {
         return proof;
     }
 
-    public String getPreviousHash() {
+    public byte[] getPreviousHash() {
         return previousHash;
     }
 
@@ -76,7 +76,7 @@ public class Block implements Serializable {
      */
     public static long proofOfWork(final long previousProof) {
         long proof = 0;
-        while (validProof(previousProof, proof))  {
+        while (!validProof(previousProof, proof))  {
             proof++;
         }
         return proof;
@@ -97,8 +97,8 @@ public class Block implements Serializable {
 
         try {
             final byte[] bytes = MessageDigest.getInstance("SHA-256").digest(("" + previousProof + currentProof).getBytes());
-            final String endCharacters = new StringBuffer(new String(bytes)).reverse().substring(1,4);
-            return Objects.equals(endCharacters, "0000");
+            final String endCharacters = new StringBuffer(new String(bytes)).reverse().substring(0,2);
+            return Objects.equals(endCharacters, "00");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
