@@ -93,7 +93,7 @@ public class Block implements Serializable {
      * @param currentProof the current proof
      * @return true if valid
      */
-    private static boolean validProof(final long previousProof, final long currentProof) {
+    public static boolean validProof(final long previousProof, final long currentProof) {
 
         try {
             final byte[] bytes = MessageDigest.getInstance("SHA-256").digest(("" + previousProof + currentProof).getBytes());

@@ -2,26 +2,27 @@ package com.blockchain.java.domain;
 
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+
+import static com.blockchain.java.domain.Block.validProof;
 
 @Component
 public class Blockchain {
 
     private LinkedList<Block> chain;
     private ArrayList<Transaction> nextBlockTransactions;
+    private Set<Node> nodes;
 
     public Blockchain() {
         this.chain = new LinkedList<>();
         this.nextBlockTransactions = new ArrayList<>();
-
+        this.nodes = new HashSet<>();
         //Initialize the blockchain with a block
         this.createNewBlock("0001".getBytes(), 50);
     }
 
     /**
-     * Create a new com.blockchain.java.domain.Block and add it to the chain.*
+     * Create a new {@link Block} and add it to the chain.
      *
      * @param previousHash the previous hash
      * @param proof        the proof
@@ -42,8 +43,8 @@ public class Blockchain {
     }
 
     /**
-     * Create a new transaction and return the index of the previous block.
-     * A transaction is added to a queue so that it can be processed into a block later on.
+     * Create a new {@link Transaction} and return the index of the previous block.
+     * A {@link Transaction} is added to a list so that it can be processed into a block later on.
      *
      * @param transaction the new Transaction
      * @return an increment of the last block's index
@@ -67,4 +68,71 @@ public class Blockchain {
         return this.chain;
     }
 
+    public Set<Node> getNodes() {
+        return nodes;
+    }
+
+    /**
+     * Register a new {@link Node}
+     *
+     * @param address the node's address
+     */
+    public void addNode(final String address) {
+        this.nodes.add(new Node(address));
+    }
+
+    /**
+     * Determines whether given blockchain is valid
+     *
+     * @param chain the block chain
+     * @return true is valid, false otherwise
+     */
+    private static boolean isValid(final List<Block> chain) {
+        Block previousBlock = chain.get(0);
+        for (int i = 1; i < chain.size(); i++) {
+            final Block currentBlock = chain.get(i);
+
+            //assert that current block has correct previous block hash
+            if (Arrays.equals(currentBlock.getPreviousHash(), previousBlock.hash())) {
+                return false;
+            }
+
+            //check that the proof is correct
+            if (validProof(previousBlock.getProof(), currentBlock.getProof())) {
+                return false;
+            }
+
+            previousBlock = currentBlock;
+        }
+        return true;
+    }
+
+    /**
+     * This is the consensus algorithm. The node with the longest chain is considered
+     * as the source of truth. The current node will iterate through all other nodes
+     * and check their chains. This node will update its chain if it finds a node with a
+     * longer chain.
+     *
+     * @return the blockchain
+     */
+    public Blockchain consensus() {
+        List<Block> newChain = null;
+        int max_length = this.chain.size();
+        for (Node node : this.nodes) {
+            final Blockchain otherNodeBlockchain = node.fetchChain();
+            if (otherNodeBlockchain != null) {
+                final LinkedList<Block> otherNodeChain = otherNodeBlockchain.chain;
+                //if other node's blockchain is longer and valid, update newChain and max_length variables
+                if (otherNodeChain.size() > max_length && isValid(otherNodeChain)) {
+                    max_length = otherNodeChain.size();
+                    newChain = otherNodeChain;
+                }
+            }
+        }
+
+        if (newChain != null) {
+            this.chain = new LinkedList<>(newChain);
+        }
+        return this;
+    }
 }
