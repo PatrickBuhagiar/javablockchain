@@ -9,7 +9,7 @@ public class Transaction implements Serializable {
     private long amount;
 
 
-    protected Transaction(){
+    protected Transaction() {
     }
 
     public Transaction(final String sender,
@@ -31,6 +31,7 @@ public class Transaction implements Serializable {
     public long getAmount() {
         return amount;
     }
+
 }
 
 

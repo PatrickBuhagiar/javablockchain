@@ -45,14 +45,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <scope>test</scope>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.1.1</version>
         </dependency>
         <dependency>
-            <groupId>com.eclipsesource.jaxrs</groupId>
-            <artifactId>jersey-all</artifactId>
-            <version>2.22.2</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.6.1</version>
         </dependency>
     </dependencies>
 

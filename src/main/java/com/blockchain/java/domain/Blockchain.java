@@ -2,23 +2,37 @@ package com.blockchain.java.domain;
 
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static com.blockchain.java.domain.Block.validProof;
 
 @Component
-public class Blockchain {
+public class Blockchain implements Serializable {
 
     private LinkedList<Block> chain;
     private ArrayList<Transaction> nextBlockTransactions;
     private Set<Node> nodes;
+
+    public Blockchain(final LinkedList<Block> chain,
+                      final ArrayList<Transaction> nextBlockTransactions,
+                      final Set<Node> nodes) {
+        this.chain = chain;
+        this.nextBlockTransactions = nextBlockTransactions;
+        this.nodes = nodes;
+    }
 
     public Blockchain() {
         this.chain = new LinkedList<>();
         this.nextBlockTransactions = new ArrayList<>();
         this.nodes = new HashSet<>();
         //Initialize the blockchain with a block
-        this.createNewBlock("0001".getBytes(), 50);
+        this.createNewBlock("0001".getBytes(), 50, 0L);
+    }
+
+    public Blockchain updateChain(LinkedList<Block> chain) {
+        this.chain = chain;
+        return this;
     }
 
     /**
@@ -26,12 +40,14 @@ public class Blockchain {
      *
      * @param previousHash the previous hash
      * @param proof        the proof
+     * @param timestamp    timestamp
      * @return the newly created block
      */
     public Block createNewBlock(final byte[] previousHash,
-                                final long proof) {
+                                final long proof,
+                                final long timestamp) {
         final Block block = new Block(this.chain.size() + 1,
-                System.currentTimeMillis(),
+                timestamp,
                 new ArrayList<>(this.nextBlockTransactions),
                 proof,
                 previousHash);
@@ -64,12 +80,16 @@ public class Blockchain {
         return this.chain.getLast();
     }
 
-    public List<Block> getChain() {
-        return this.chain;
-    }
-
     public Set<Node> getNodes() {
         return nodes;
+    }
+
+    public LinkedList<Block> getChain() {
+        return chain;
+    }
+
+    public ArrayList<Transaction> getNextBlockTransactions() {
+        return nextBlockTransactions;
     }
 
     /**
@@ -78,7 +98,7 @@ public class Blockchain {
      * @param address the node's address
      */
     public void addNode(final String address) {
-        this.nodes.add(new Node(address));
+        this.nodes.add(new Node(address.replace("%3A", ":")));
     }
 
     /**
@@ -93,12 +113,12 @@ public class Blockchain {
             final Block currentBlock = chain.get(i);
 
             //assert that current block has correct previous block hash
-            if (Arrays.equals(currentBlock.getPreviousHash(), previousBlock.hash())) {
+            if (!Arrays.equals(currentBlock.getPreviousHash(), previousBlock.hash())) {
                 return false;
             }
 
             //check that the proof is correct
-            if (validProof(previousBlock.getProof(), currentBlock.getProof())) {
+            if (!validProof(previousBlock.getProof(), currentBlock.getProof())) {
                 return false;
             }
 
@@ -119,7 +139,7 @@ public class Blockchain {
         List<Block> newChain = null;
         int max_length = this.chain.size();
         for (Node node : this.nodes) {
-            final Blockchain otherNodeBlockchain = node.fetchChain();
+            final Blockchain otherNodeBlockchain = node.fetchNodeBlockChain();
             if (otherNodeBlockchain != null) {
                 final LinkedList<Block> otherNodeChain = otherNodeBlockchain.chain;
                 //if other node's blockchain is longer and valid, update newChain and max_length variables

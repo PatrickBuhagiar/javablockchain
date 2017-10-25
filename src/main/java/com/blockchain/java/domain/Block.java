@@ -16,6 +16,9 @@ public class Block implements Serializable {
     private long proof;
     private byte[] previousHash;
 
+    public Block() {
+    }
+
     public Block(final int index,
                  final long timestamp,
                  final ArrayList<Transaction> transactions,
@@ -71,12 +74,12 @@ public class Block implements Serializable {
      * The algorithm with iterate through different proofs
      * until one satisfies the valid Proof condition.
      *
-      * @param previousProof the previous block's proof
+     * @param previousProof the previous block's proof
      * @return the new proof
      */
     public static long proofOfWork(final long previousProof) {
         long proof = 0;
-        while (!validProof(previousProof, proof))  {
+        while (!validProof(previousProof, proof)) {
             proof++;
         }
         return proof;
@@ -84,20 +87,20 @@ public class Block implements Serializable {
 
     /**
      * Validates the proof.
-     *
+     * <p>
      * The proof is deemed valid when hashing the String
      * concatenation of the previous proof and current proof
      * end with 4 zeros.
      *
      * @param previousProof the previous proof
-     * @param currentProof the current proof
+     * @param currentProof  the current proof
      * @return true if valid
      */
     public static boolean validProof(final long previousProof, final long currentProof) {
 
         try {
             final byte[] bytes = MessageDigest.getInstance("SHA-256").digest(("" + previousProof + currentProof).getBytes());
-            final String endCharacters = new StringBuffer(new String(bytes)).reverse().substring(0,2);
+            final String endCharacters = new StringBuffer(new String(bytes)).reverse().substring(0, 2);
             return Objects.equals(endCharacters, "00");
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();

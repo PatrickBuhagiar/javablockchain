@@ -1,19 +1,25 @@
 package com.blockchain.java.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
-public class Node {
+
+public class Node implements Serializable {
+
     private String address;
+
+    public Node() {
+
+    }
 
     public Node(final String address) {
         this.address = address;
@@ -23,24 +29,73 @@ public class Node {
         return address;
     }
 
-    public Blockchain fetchChain() {
-        final Client client = ClientBuilder.newClient();
-        final WebTarget resource = client.target("http://" + this.address + "/chain");
-        final Invocation.Builder request = resource.request();
+    /**
+     * This will fetch the full blockchain for a specific node.
+     *
+     * @return The other node's blockchain.
+     */
+    public Blockchain fetchNodeBlockChain() {
+        DefaultHttpClient httpClient = new DefaultHttpClient();
+        HttpGet getRequest = new HttpGet("http://" + this.address + "/chain");
+        getRequest.addHeader("accept", "application/json");
+        getRequest.addHeader("Content-Type", "application/json");
 
-        request.accept(MediaType.APPLICATION_JSON_TYPE);
-        final Response response = request.get();
 
-        Blockchain blockchain = null;
-        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL) {
-            final String text = response.getEntity().toString();
-            final ObjectMapper mapper = new ObjectMapper();
-            try {
-                blockchain = mapper.readValue(text, Blockchain.class);
-            } catch (IOException e) {
-                e.printStackTrace();
+        HttpResponse response;
+        try {
+            System.out.println("Fetching Blockchain " + "http://" + this.address + "/chain");
+            response = httpClient.execute(getRequest);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                System.out.println("Failed: HTTP " + response.getStatusLine().getStatusCode() + " error:" + response.getStatusLine().getReasonPhrase());
+                return null;
             }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+            String jsonString;
+            Blockchain blockchain = null;
+            while ((jsonString = br.readLine()) != null) {
+                //Parse JSON String into Blockchain POJO
+                final ObjectMapper mapper = new ObjectMapper();
+                blockchain = mapper.readValue(jsonString, Blockchain.class);
+            }
+            return blockchain;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            httpClient.getConnectionManager().shutdown();
         }
-        return blockchain;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Set<Node> registerNode(final String nodeAddress) {
+        DefaultHttpClient httpClient = new DefaultHttpClient();
+        final HttpGet httpPost = new HttpGet("http://" + this.address + "/nodes/" + nodeAddress + "/add");
+        httpPost.addHeader("Content-Type", "application/json");
+        httpPost.addHeader("accept", "application/json");
+        HttpResponse response;
+        try {
+            System.out.println("Registering node to " + "http://" + this.address + "/nodes/" + nodeAddress + "/add");
+            response = httpClient.execute(httpPost);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                System.out.println("Failed: HTTP " + response.getStatusLine().getStatusCode() + " error:" + response.getStatusLine().getReasonPhrase());
+                return new HashSet<>();
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
+            String jsonString;
+            Set nodes = null;
+            while ((jsonString = br.readLine()) != null) {
+                final ObjectMapper mapper = new ObjectMapper();
+                nodes = mapper.readValue(jsonString, Set.class);
+            }
+            return (Set<Node>) nodes;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            httpClient.getConnectionManager().shutdown();
+        }
+        return null;
     }
 }
