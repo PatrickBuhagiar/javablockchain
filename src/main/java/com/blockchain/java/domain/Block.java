@@ -16,7 +16,7 @@ public class Block implements Serializable {
     private long proof;
     private byte[] previousHash;
 
-    public Block() {
+    protected Block() {
     }
 
     public Block(final int index,
@@ -87,10 +87,13 @@ public class Block implements Serializable {
 
     /**
      * Validates the proof.
-     * <p>
+     *
      * The proof is deemed valid when hashing the String
      * concatenation of the previous proof and current proof
-     * end with 4 zeros.
+     * end with 2 zeros.
+     *
+     * Increasing this condition, say to ending in 4 zeros
+     * instead of 2, will increase the difficulty of mining a block.
      *
      * @param previousProof the previous proof
      * @param currentProof  the current proof

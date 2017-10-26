@@ -12,7 +12,6 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-
 public class Node implements Serializable {
 
     private String address;
@@ -68,6 +67,11 @@ public class Node implements Serializable {
         }
     }
 
+    /**
+     * Registers a new node address to thid node through a HTTP GET call.
+     * @param nodeAddress Node address that will be registered in this node
+     * @return new set of nodes for this node
+     */
     @SuppressWarnings("unchecked")
     public Set<Node> registerNode(final String nodeAddress) {
         DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -96,6 +100,6 @@ public class Node implements Serializable {
         } finally {
             httpClient.getConnectionManager().shutdown();
         }
-        return null;
+        return  new HashSet<>();
     }
 }

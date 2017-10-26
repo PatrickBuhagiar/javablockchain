@@ -53,13 +53,14 @@ public class BlockchainController {
 
         //next we're going to iterate all existing nodes and add this new node's nodeAddress to their node lists
         alphaNode.registerNode(thisNodeAddress);
-        existingBlockChain.getNodes().forEach(node -> node.registerNode(thisNodeAddress));
+        existingBlockChain.getNeighbouringNodes().forEach(node -> node.registerNode(thisNodeAddress));
 
-        //finally, update this node's node list
+        //finally, update this node's blockchain
         this.blockchain.addNode(alphaNode.getAddress());
         this.blockchain.updateChain(existingBlockChain.getChain());
-        existingBlockChain.getNodes().forEach(node -> this.blockchain.addNode(node.getAddress()));
-        return this.blockchain.getNodes();
+        //Add new node address to this node
+        existingBlockChain.getNeighbouringNodes().forEach(node -> this.blockchain.addNode(node.getAddress()));
+        return this.blockchain.getNeighbouringNodes();
     }
 
     @RequestMapping(value = "nodes/{address}/add", method = GET)
@@ -68,7 +69,7 @@ public class BlockchainController {
         //Adds this nodeAddress to the list of neighbouring nodes for this Node.
         System.out.println("Adding Node " + address);
         this.blockchain.addNode(address);
-        return this.blockchain.getNodes();
+        return this.blockchain.getNeighbouringNodes();
     }
 
     @RequestMapping(value = "nodes/consensus", method = GET)

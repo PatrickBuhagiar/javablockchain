@@ -12,27 +12,26 @@ public class Blockchain implements Serializable {
 
     private LinkedList<Block> chain;
     private ArrayList<Transaction> nextBlockTransactions;
-    private Set<Node> nodes;
+    private Set<Node> neighbouringNodes;
 
     public Blockchain(final LinkedList<Block> chain,
                       final ArrayList<Transaction> nextBlockTransactions,
-                      final Set<Node> nodes) {
+                      final Set<Node> neighbouringNodes) {
         this.chain = chain;
         this.nextBlockTransactions = nextBlockTransactions;
-        this.nodes = nodes;
+        this.neighbouringNodes = neighbouringNodes;
     }
 
     public Blockchain() {
         this.chain = new LinkedList<>();
         this.nextBlockTransactions = new ArrayList<>();
-        this.nodes = new HashSet<>();
+        this.neighbouringNodes = new HashSet<>();
         //Initialize the blockchain with a block
         this.createNewBlock("0001".getBytes(), 50, 0L);
     }
 
-    public Blockchain updateChain(LinkedList<Block> chain) {
+    public void updateChain(LinkedList<Block> chain) {
         this.chain = chain;
-        return this;
     }
 
     /**
@@ -80,16 +79,12 @@ public class Blockchain implements Serializable {
         return this.chain.getLast();
     }
 
-    public Set<Node> getNodes() {
-        return nodes;
+    public Set<Node> getNeighbouringNodes() {
+        return neighbouringNodes;
     }
 
     public LinkedList<Block> getChain() {
         return chain;
-    }
-
-    public ArrayList<Transaction> getNextBlockTransactions() {
-        return nextBlockTransactions;
     }
 
     /**
@@ -98,7 +93,7 @@ public class Blockchain implements Serializable {
      * @param address the node's address
      */
     public void addNode(final String address) {
-        this.nodes.add(new Node(address.replace("%3A", ":")));
+        this.neighbouringNodes.add(new Node(address.replace("%3A", ":")));
     }
 
     /**
@@ -129,7 +124,7 @@ public class Blockchain implements Serializable {
 
     /**
      * This is the consensus algorithm. The node with the longest chain is considered
-     * as the source of truth. The current node will iterate through all other nodes
+     * as the source of truth. The current node will iterate through all other neighbouringNodes
      * and check their chains. This node will update its chain if it finds a node with a
      * longer chain.
      *
@@ -138,7 +133,7 @@ public class Blockchain implements Serializable {
     public Blockchain consensus() {
         List<Block> newChain = null;
         int max_length = this.chain.size();
-        for (Node node : this.nodes) {
+        for (Node node : this.neighbouringNodes) {
             final Blockchain otherNodeBlockchain = node.fetchNodeBlockChain();
             if (otherNodeBlockchain != null) {
                 final LinkedList<Block> otherNodeChain = otherNodeBlockchain.chain;

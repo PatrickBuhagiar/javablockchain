@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class NodeAddress implements Serializable {
     private String address;
 
-    public NodeAddress() {
+    protected NodeAddress() {
     }
 
     public NodeAddress(String address) {
