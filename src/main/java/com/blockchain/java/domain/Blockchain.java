@@ -12,20 +12,20 @@ public class Blockchain implements Serializable {
 
     private LinkedList<Block> chain;
     private ArrayList<Transaction> nextBlockTransactions;
-    private Set<Node> neighbouringNodes;
+    private Set<Miner> neighbouringMiners;
 
     public Blockchain(final LinkedList<Block> chain,
                       final ArrayList<Transaction> nextBlockTransactions,
-                      final Set<Node> neighbouringNodes) {
+                      final Set<Miner> neighbouringMiners) {
         this.chain = chain;
         this.nextBlockTransactions = nextBlockTransactions;
-        this.neighbouringNodes = neighbouringNodes;
+        this.neighbouringMiners = neighbouringMiners;
     }
 
     public Blockchain() {
         this.chain = new LinkedList<>();
         this.nextBlockTransactions = new ArrayList<>();
-        this.neighbouringNodes = new HashSet<>();
+        this.neighbouringMiners = new HashSet<>();
         //Initialize the blockchain with a block
         this.createNewBlock("0001".getBytes(), 50, 0L);
     }
@@ -71,7 +71,7 @@ public class Blockchain implements Serializable {
     }
 
     /**
-     * Get the latest block in the chain.
+     * Get the last block in the chain.
      *
      * @return the last block in the chain.
      */
@@ -79,8 +79,8 @@ public class Blockchain implements Serializable {
         return this.chain.getLast();
     }
 
-    public Set<Node> getNeighbouringNodes() {
-        return neighbouringNodes;
+    public Set<Miner> getNeighbouringMiners() {
+        return neighbouringMiners;
     }
 
     public LinkedList<Block> getChain() {
@@ -88,12 +88,12 @@ public class Blockchain implements Serializable {
     }
 
     /**
-     * Register a new {@link Node}
+     * Register a new {@link Miner}
      *
-     * @param address the node's address
+     * @param address the miner's address
      */
-    public void addNode(final String address) {
-        this.neighbouringNodes.add(new Node(address.replace("%3A", ":")));
+    public void addMiner(final String address) {
+        this.neighbouringMiners.add(new Miner(address.replace("%3A", ":")));
     }
 
     /**
@@ -123,9 +123,9 @@ public class Blockchain implements Serializable {
     }
 
     /**
-     * This is the consensus algorithm. The node with the longest chain is considered
-     * as the source of truth. The current node will iterate through all other neighbouringNodes
-     * and check their chains. This node will update its chain if it finds a node with a
+     * This is the consensus algorithm. The miner with the longest chain is considered
+     * as the source of truth. The current miner will iterate through all other neighbouringMiners
+     * and check their chains. This miner will update its chain if it finds a miner with a
      * longer chain.
      *
      * @return the blockchain
@@ -133,14 +133,14 @@ public class Blockchain implements Serializable {
     public Blockchain consensus() {
         List<Block> newChain = null;
         int max_length = this.chain.size();
-        for (Node node : this.neighbouringNodes) {
-            final Blockchain otherNodeBlockchain = node.fetchNodeBlockChain();
-            if (otherNodeBlockchain != null) {
-                final LinkedList<Block> otherNodeChain = otherNodeBlockchain.chain;
-                //if other node's blockchain is longer and valid, update newChain and max_length variables
-                if (otherNodeChain.size() > max_length && isValid(otherNodeChain)) {
-                    max_length = otherNodeChain.size();
-                    newChain = otherNodeChain;
+        for (Miner miner : this.neighbouringMiners) {
+            final Blockchain otherMinerBlockchain = miner.fetchMinerBlockChain();
+            if (otherMinerBlockchain != null) {
+                final LinkedList<Block> otherMinerChain = otherMinerBlockchain.chain;
+                //if other miner's blockchain is longer and valid, update newChain and max_length variables
+                if (otherMinerChain.size() > max_length && isValid(otherMinerChain)) {
+                    max_length = otherMinerChain.size();
+                    newChain = otherMinerChain;
                 }
             }
         }

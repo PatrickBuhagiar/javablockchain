@@ -2,13 +2,13 @@ package com.blockchain.java.domain;
 
 import java.io.Serializable;
 
-public class NodeAddress implements Serializable {
+public class MinerAddress implements Serializable {
     private String address;
 
-    protected NodeAddress() {
+    protected MinerAddress() {
     }
 
-    public NodeAddress(String address) {
+    public MinerAddress(String address) {
         this.address = address;
     }
 

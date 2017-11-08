@@ -7,8 +7,7 @@ public class Transaction implements Serializable {
     private String sender;
     private String recipient;
     private long amount;
-
-
+    
     protected Transaction() {
     }
 

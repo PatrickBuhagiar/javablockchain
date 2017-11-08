@@ -12,15 +12,15 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Node implements Serializable {
+public class Miner implements Serializable {
 
     private String address;
 
-    public Node() {
+    public Miner() {
 
     }
 
-    public Node(final String address) {
+    public Miner(final String address) {
         this.address = address;
     }
 
@@ -29,11 +29,11 @@ public class Node implements Serializable {
     }
 
     /**
-     * This will fetch the full blockchain for a specific node.
+     * This will fetch the full blockchain for a specific miner.
      *
-     * @return The other node's blockchain.
+     * @return The other miner's blockchain.
      */
-    public Blockchain fetchNodeBlockChain() {
+    public Blockchain fetchMinerBlockChain() {
         DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpGet getRequest = new HttpGet("http://" + this.address + "/chain");
         getRequest.addHeader("accept", "application/json");
@@ -68,19 +68,19 @@ public class Node implements Serializable {
     }
 
     /**
-     * Registers a new node address to thid node through a HTTP GET call.
-     * @param nodeAddress Node address that will be registered in this node
-     * @return new set of nodes for this node
+     * Registers a new miner to this miner through a HTTP GET call.
+     * @param minerAddress Miner address that will be registered in this miner
+     * @return new set of miners for this miner
      */
     @SuppressWarnings("unchecked")
-    public Set<Node> registerNode(final String nodeAddress) {
+    public Set<Miner> registerMiner(final String minerAddress) {
         DefaultHttpClient httpClient = new DefaultHttpClient();
-        final HttpGet httpPost = new HttpGet("http://" + this.address + "/nodes/" + nodeAddress + "/add");
+        final HttpGet httpPost = new HttpGet("http://" + this.address + "/miners/" + minerAddress + "/add");
         httpPost.addHeader("Content-Type", "application/json");
         httpPost.addHeader("accept", "application/json");
         HttpResponse response;
         try {
-            System.out.println("Registering node to " + "http://" + this.address + "/nodes/" + nodeAddress + "/add");
+            System.out.println("Registering miner to " + "http://" + this.address + "/miners/" + minerAddress + "/add");
             response = httpClient.execute(httpPost);
             if (response.getStatusLine().getStatusCode() != 200) {
                 System.out.println("Failed: HTTP " + response.getStatusLine().getStatusCode() + " error:" + response.getStatusLine().getReasonPhrase());
@@ -89,12 +89,12 @@ public class Node implements Serializable {
 
             BufferedReader br = new BufferedReader(new InputStreamReader((response.getEntity().getContent())));
             String jsonString;
-            Set nodes = null;
+            Set miners = null;
             while ((jsonString = br.readLine()) != null) {
                 final ObjectMapper mapper = new ObjectMapper();
-                nodes = mapper.readValue(jsonString, Set.class);
+                miners = mapper.readValue(jsonString, Set.class);
             }
-            return (Set<Node>) nodes;
+            return (Set<Miner>) miners;
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

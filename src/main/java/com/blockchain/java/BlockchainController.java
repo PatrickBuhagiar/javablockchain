@@ -27,8 +27,8 @@ public class BlockchainController {
     Block mineBlock(@RequestHeader(value = "identifier") final String identifier) {
         //find new proof
         final long newProof = proofOfWork(blockchain.lastBlock().getProof());
-        //reward miner. In this case we will set sender as 0000
-        blockchain.createNewTransaction(new Transaction("0000", identifier, 1L));
+        //reward miner 1 coin. In this case we will set sender as ....
+        blockchain.createNewTransaction(new Transaction("....", identifier, 1L));
         //create new block
         return blockchain.createNewBlock(blockchain.lastBlock().hash(), newProof, System.currentTimeMillis());
     }
@@ -39,40 +39,40 @@ public class BlockchainController {
         return blockchain.createNewTransaction(transaction);
     }
 
-    @RequestMapping(value = "nodes/register", method = POST)
+    @RequestMapping(value = "miners/register", method = POST)
     public @ResponseBody
-    Set<Node> registerSelf(@RequestBody final NodeAddress nodeAddress) {
+    Set<Miner> registerSelf(@RequestBody final MinerAddress minerAddress) {
         System.out.println("Current port is " + PortListener.getPort());
         //Assumption: we'll be working on localhost only
-        final String thisNodeAddress = "127.0.0.1:" + PortListener.getPort();
-        final Node alphaNode = new Node(nodeAddress.getAddress());
+        final String currentMinerAddress = "127.0.0.1:" + PortListener.getPort();
+        final Miner alphaMiner = new Miner(minerAddress.getAddress());
 
         //get the target's blockchain. For simplicity, we're going to assume that the chosen
-        //node contains the right list of nodes.
-        final Blockchain existingBlockChain = alphaNode.fetchNodeBlockChain();
+        //miner contains the right list of miners.
+        final Blockchain existingBlockChain = alphaMiner.fetchMinerBlockChain();
 
-        //next we're going to iterate all existing nodes and add this new node's nodeAddress to their node lists
-        alphaNode.registerNode(thisNodeAddress);
-        existingBlockChain.getNeighbouringNodes().forEach(node -> node.registerNode(thisNodeAddress));
+        //next we're going to iterate all existing miners and add this new miner's minerAddress to their miner lists
+        alphaMiner.registerMiner(currentMinerAddress);
+        existingBlockChain.getNeighbouringMiners().forEach(miner -> miner.registerMiner(currentMinerAddress));
 
-        //finally, update this node's blockchain
-        this.blockchain.addNode(alphaNode.getAddress());
+        //finally, update this miner's blockchain
+        this.blockchain.addMiner(alphaMiner.getAddress());
         this.blockchain.updateChain(existingBlockChain.getChain());
-        //Add new node address to this node
-        existingBlockChain.getNeighbouringNodes().forEach(node -> this.blockchain.addNode(node.getAddress()));
-        return this.blockchain.getNeighbouringNodes();
+        //Add new miner address to this miner
+        existingBlockChain.getNeighbouringMiners().forEach(miner -> this.blockchain.addMiner(miner.getAddress()));
+        return this.blockchain.getNeighbouringMiners();
     }
 
-    @RequestMapping(value = "nodes/{address}/add", method = GET)
+    @RequestMapping(value = "miners/{address}/add", method = GET)
     public @ResponseBody
-    Set<Node> addNode(@PathVariable final String address) {
-        //Adds this nodeAddress to the list of neighbouring nodes for this Node.
-        System.out.println("Adding Node " + address);
-        this.blockchain.addNode(address);
-        return this.blockchain.getNeighbouringNodes();
+    Set<Miner> addMiner(@PathVariable final String address) {
+        //Adds this minerAddress to the list of neighbouring miners for this Miner.
+        System.out.println("Adding Miner " + address);
+        this.blockchain.addMiner(address);
+        return this.blockchain.getNeighbouringMiners();
     }
 
-    @RequestMapping(value = "nodes/consensus", method = GET)
+    @RequestMapping(value = "miners/consensus", method = GET)
     public @ResponseBody
     Blockchain consensus() {
         return this.blockchain.consensus();
